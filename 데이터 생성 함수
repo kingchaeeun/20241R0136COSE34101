@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_PROCESSES 10
+
+typedef struct {
+    int pid;
+    int arrival_time;
+    int burst_time;
+    int priority;
+    int io_burst_time;
+} Process;
+
+void generate_processes(Process processes[], int num_processes) {
+    srand(time(NULL));
+    for (int i = 0; i < num_processes; i++) {
+        processes[i].pid = i + 1;
+        processes[i].arrival_time = rand() % 100;
+        processes[i].burst_time = rand() % 20 + 1;
+        processes[i].priority = rand() % 10 + 1;
+        processes[i].io_burst_time = rand() % 5 + 1;
+    }
+}
+
+void print_processes(Process processes[], int num_processes) {
+    printf("PID\tArrival\tBurst\tPriority\tI/O Burst\n");
+    for (int i = 0; i < num_processes; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\n", processes[i].pid, processes[i].arrival_time, processes[i].burst_time, processes[i].priority, processes[i].io_burst_time);
+    }
+}
+
+int main() {
+    Process processes[MAX_PROCESSES];
+    generate_processes(processes, MAX_PROCESSES);
+    print_processes(processes, MAX_PROCESSES);
+    return 0;
+}
