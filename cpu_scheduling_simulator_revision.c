@@ -26,7 +26,8 @@ int dequeue(int queue[], int* front);
 // Function prototypes
 void generate_processes(Process processes[], int num_processes);
 void print_processes(Process processes[], int num_processes);
-void calculate_average_times(Process processes[], int num_processes);
+void calculate_average_times(Process processes[], int num_processes, float* avg_waiting_time, float* avg_turnaround_time);
+void export_averages_to_csv(const char* filename, const char* algorithm_name, float avg_waiting_time, float avg_turnaround_time);
 void fcfs_scheduling(Process processes[], int num_processes);
 void non_preemptive_sjf(Process processes[], int num_processes);
 void preemptive_sjf(Process processes[], int num_processes);
@@ -35,7 +36,6 @@ void preemptive_priority(Process processes[], int num_processes);
 void round_robin(Process processes[], int num_processes, int time_quantum);
 void reset_processes(Process processes[], int num_processes);
 void print_gantt_chart(Process processes[], int num_processes, int timeline[], int timeline_size, int time_stamps[]);
-void export_to_csv(const char* filename, float fcfs_wait, float fcfs_turn, float np_sjf_wait, float np_sjf_turn, float p_sjf_wait, float p_sjf_turn, float np_pri_wait, float np_pri_turn, float p_pri_wait, float p_pri_turn, float rr_wait, float rr_turn);
 
 // 도착 시간을 기준으로 정렬하기 위한 비교 함수
 int compare_arrival_time(const void* a, const void* b) {
@@ -69,7 +69,7 @@ void print_processes(Process processes[], int num_processes) {
     }
 }
 
-void calculate_average_times(Process processes[], int num_processes) {
+void calculate_average_times(Process processes[], int num_processes, float* avg_waiting_time, float* avg_turnaround_time) {
     int total_waiting_time = 0;
     int total_turnaround_time = 0;
 
@@ -78,8 +78,22 @@ void calculate_average_times(Process processes[], int num_processes) {
         total_turnaround_time += processes[i].turnaround_time;
     }
 
-    printf("Average Waiting Time: %.2f\n", (float)total_waiting_time / num_processes);
-    printf("Average Turnaround Time: %.2f\n", (float)total_turnaround_time / num_processes);
+    *avg_waiting_time = (float)total_waiting_time / num_processes;
+    *avg_turnaround_time = (float)total_turnaround_time / num_processes;
+
+    printf("Average Waiting Time: %.2f\n", *avg_waiting_time);
+    printf("Average Turnaround Time: %.2f\n", *avg_turnaround_time);
+}
+
+void export_averages_to_csv(const char* filename, const char* algorithm_name, float avg_waiting_time, float avg_turnaround_time) {
+    FILE* fp = fopen(filename, "a");
+    if (fp == NULL) {
+        perror("Unable to open file");
+        return;
+    }
+
+    fprintf(fp, "%s,%.2f,%.2f\n", algorithm_name, avg_waiting_time, avg_turnaround_time);
+    fclose(fp);
 }
 
 void fcfs_scheduling(Process processes[], int num_processes) {
@@ -89,7 +103,6 @@ void fcfs_scheduling(Process processes[], int num_processes) {
     int time_stamps[100];
     int timeline_size = 0;
 
-    // 도착 시간에 따라 프로세스들을 정렬합니다.
     qsort(processes, num_processes, sizeof(Process), compare_arrival_time);
 
     for (int i = 0; i < num_processes; i++) {
@@ -112,7 +125,10 @@ void fcfs_scheduling(Process processes[], int num_processes) {
     }
 
     print_gantt_chart(processes, num_processes, timeline, timeline_size, time_stamps);
-    calculate_average_times(processes, num_processes);
+
+    float avg_waiting_time, avg_turnaround_time;
+    calculate_average_times(processes, num_processes, &avg_waiting_time, &avg_turnaround_time);
+    export_averages_to_csv("scheduling_results.csv", "FCFS", avg_waiting_time, avg_turnaround_time);
 }
 
 void non_preemptive_sjf(Process processes[], int num_processes) {
@@ -155,7 +171,10 @@ void non_preemptive_sjf(Process processes[], int num_processes) {
     }
 
     print_gantt_chart(processes, num_processes, timeline, timeline_size, time_stamps);
-    calculate_average_times(processes, num_processes);
+
+    float avg_waiting_time, avg_turnaround_time;
+    calculate_average_times(processes, num_processes, &avg_waiting_time, &avg_turnaround_time);
+    export_averages_to_csv("scheduling_results.csv", "Non-Preemptive SJF", avg_waiting_time, avg_turnaround_time);
 }
 
 void preemptive_sjf(Process processes[], int num_processes) {
@@ -199,7 +218,10 @@ void preemptive_sjf(Process processes[], int num_processes) {
     }
 
     print_gantt_chart(processes, num_processes, timeline, timeline_size, time_stamps);
-    calculate_average_times(processes, num_processes);
+
+    float avg_waiting_time, avg_turnaround_time;
+    calculate_average_times(processes, num_processes, &avg_waiting_time, &avg_turnaround_time);
+    export_averages_to_csv("scheduling_results.csv", "Preemptive SJF", avg_waiting_time, avg_turnaround_time);
 }
 
 void non_preemptive_priority(Process processes[], int num_processes) {
@@ -242,7 +264,10 @@ void non_preemptive_priority(Process processes[], int num_processes) {
     }
 
     print_gantt_chart(processes, num_processes, timeline, timeline_size, time_stamps);
-    calculate_average_times(processes, num_processes);
+
+    float avg_waiting_time, avg_turnaround_time;
+    calculate_average_times(processes, num_processes, &avg_waiting_time, &avg_turnaround_time);
+    export_averages_to_csv("scheduling_results.csv", "Non-Preemptive Priority", avg_waiting_time, avg_turnaround_time);
 }
 
 void preemptive_priority(Process processes[], int num_processes) {
@@ -286,7 +311,10 @@ void preemptive_priority(Process processes[], int num_processes) {
     }
 
     print_gantt_chart(processes, num_processes, timeline, timeline_size, time_stamps);
-    calculate_average_times(processes, num_processes);
+
+    float avg_waiting_time, avg_turnaround_time;
+    calculate_average_times(processes, num_processes, &avg_waiting_time, &avg_turnaround_time);
+    export_averages_to_csv("scheduling_results.csv", "Preemptive Priority", avg_waiting_time, avg_turnaround_time);
 }
 
 void round_robin(Process processes[], int num_processes, int time_quantum) {
@@ -350,7 +378,10 @@ void round_robin(Process processes[], int num_processes, int time_quantum) {
 
     print_gantt_chart(processes, num_processes, timeline, timeline_size, time_stamps);
     printf("Number of context switches: %d\n", context_switches);
-    calculate_average_times(processes, num_processes);
+
+    float avg_waiting_time, avg_turnaround_time;
+    calculate_average_times(processes, num_processes, &avg_waiting_time, &avg_turnaround_time);
+    export_averages_to_csv("scheduling_results.csv", "Round Robin", avg_waiting_time, avg_turnaround_time);
 }
 
 void reset_processes(Process processes[], int num_processes) {
@@ -383,28 +414,16 @@ void print_gantt_chart(Process processes[], int num_processes, int timeline[], i
     printf("%d\n", time_stamps[timeline_size - 1] + 1);
 }
 
-void export_to_csv(const char* filename, float fcfs_wait, float fcfs_turn, float np_sjf_wait, float np_sjf_turn, float p_sjf_wait, float p_sjf_turn, float np_pri_wait, float np_pri_turn, float p_pri_wait, float p_pri_turn, float rr_wait, float rr_turn) {
-    FILE* fp = fopen(filename, "w");
-    if (fp == NULL) {
-        printf("Error opening file!\n");
-        return;
-    }
-
-    fprintf(fp, "Algorithm,Average Waiting Time,Average Turnaround Time\n");
-    fprintf(fp, "FCFS,%.2f,%.2f\n", fcfs_wait, fcfs_turn);
-    fprintf(fp, "Non-Preemptive SJF,%.2f,%.2f\n", np_sjf_wait, np_sjf_turn);
-    fprintf(fp, "Preemptive SJF,%.2f,%.2f\n", p_sjf_wait, p_sjf_turn);
-    fprintf(fp, "Non-Preemptive Priority,%.2f,%.2f\n", np_pri_wait, np_pri_turn);
-    fprintf(fp, "Preemptive Priority,%.2f,%.2f\n", p_pri_wait, p_pri_turn);
-    fprintf(fp, "Round Robin,%.2f,%.2f\n", rr_wait, rr_turn);
-
-    fclose(fp);
-    printf("Results exported to %s\n", filename);
-}
-
 int main() {
     Process processes[MAX_PROCESSES];
     int num_processes;
+
+    // CSV file header
+    FILE* fp = fopen("scheduling_results.csv", "w");
+    if (fp != NULL) {
+        fprintf(fp, "Algorithm,Average Waiting Time,Average Turnaround Time\n");
+        fclose(fp);
+    }
 
     scanf("%d", &num_processes);
 
@@ -433,9 +452,6 @@ int main() {
 
     // Round Robin Scheduling
     round_robin(processes, num_processes, TIME_QUANTUM);
-
-    // Export to csv file
-    export_to_csv(const char* filename, float fcfs_wait, float fcfs_turn, float np_sjf_wait, float np_sjf_turn, float p_sjf_wait, float p_sjf_turn, float np_pri_wait, float np_pri_turn, float p_pri_wait, float p_pri_turn, float rr_wait, float rr_turn);
 
     return 0;
 }
